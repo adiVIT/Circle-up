@@ -18,13 +18,24 @@ class WorkExperience {
   });
 
   factory WorkExperience.fromMap(Map<String, dynamic> map) {
+    // Handle location - it can be a Map or String
+    String? locationString;
+    final location = map['location'];
+    if (location is Map<String, dynamic>) {
+      final country = location['country'] ?? '';
+      final language = location['language'] ?? '';
+      locationString = '$language-$country'.toUpperCase();
+    } else if (location is String) {
+      locationString = location;
+    }
+
     return WorkExperience(
       companyName: map['name'] ?? '',
       title: map['title'] ?? '',
       startDate: map['startDate'],
       endDate: map['endDate'],
       isCurrent: map['current'] ?? false,
-      location: map['location'],
+      location: locationString,
       summary: map['summary'],
     );
   }

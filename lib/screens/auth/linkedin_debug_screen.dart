@@ -161,6 +161,44 @@ class _LinkedInDebugScreenState extends State<LinkedInDebugScreen> {
 
             const SizedBox(height: 16),
 
+            // OAuth Flow Test Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _testOAuthFlow,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0077B5),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  '🔐 Test Full OAuth Flow (User Login)',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Quick Test Button (Direct Token)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _quickTest,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  '⚡ Quick Test - Direct Token (Testing Only)',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
             // Access Token Test Buttons
             Row(
               children: [
@@ -290,6 +328,106 @@ class _LinkedInDebugScreenState extends State<LinkedInDebugScreen> {
         const SnackBar(
             content:
                 Text('Access token test failed. Check console for details.')),
+      );
+    }
+  }
+
+  void _testOAuthFlow() async {
+    try {
+      print('🔐 Starting full LinkedIn OAuth flow test...');
+
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Call the new OAuth flow
+      final userData = await LinkedInOAuthService.signInWithLinkedIn(context);
+
+      // Close loading indicator
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      if (userData != null) {
+        // Show success dialog with user data
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('🎉 OAuth Flow Successful!'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Name: ${userData['name']}'),
+                    Text('Email: ${userData['email']}'),
+                    Text('ID: ${userData['id']}'),
+                    const SizedBox(height: 8),
+                    const Text('✅ User would be authenticated and signed in!'),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('❌ OAuth flow failed or was cancelled'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Close loading indicator if still open
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      print('OAuth flow error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ OAuth flow error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _quickTest() async {
+    final success = await LinkedInTestService.quickTest();
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              '✅ LinkedIn connection successful! Check console for details.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('❌ LinkedIn connection failed. Check console for details.'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

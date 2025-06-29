@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'linkedin_oauth_service.dart';
 
 class LinkedInTestService {
-  // Test with the actual access token you received
-  static const String testAccessToken =
-      'AQX1zYccGMpyRMOx61ASBi8M245o5dsJxSveKk_kjYFKDmI0kFTjCep9b-mkX6VGGakbzS73vLnHALt3fUAOs4nLi1_AbDMpyYxMxgST2U0JNe2WOeAQT14Rym6diFlMR19JsTkeHwXghARTj_tl57wFt4WPfFfFg-HktjhPnpku0AmNvZWOgXpB5VyyCrgpDx0hTNApd1bdlB1Qx_50elvojzXCgqZQ2X2xGN9e47wljGJzyqKIvhp2t6lKgix8uYVRhuvj6-_v93boqrk1ZmvRt-k7U_qdgS7j_JTHdvUXn_NF9uZGa195a0BB2wniHgHd-jMuBpRqDjO-Lb2wsDfUGtbYwA';
-
+  // Use the access token from the OAuth service
+  static String get testAccessToken => LinkedInOAuthService.actualAccessToken;
   static const String userinfoUrl = 'https://api.linkedin.com/v2/userinfo';
 
   // Test the actual LinkedIn API with your access token
@@ -14,25 +13,8 @@ class LinkedInTestService {
       print('=== Testing LinkedIn Access Token ===');
       print('Token: ${testAccessToken.substring(0, 20)}...');
 
-      final response = await http.get(
-        Uri.parse(userinfoUrl),
-        headers: {
-          'Authorization': 'Bearer $testAccessToken',
-          'Accept': 'application/json',
-        },
-      );
-
-      print('Response status: ${response.statusCode}');
-      print('Response headers: ${response.headers}');
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print('Response data: $data');
-        return data;
-      } else {
-        print('Error response: ${response.body}');
-        return null;
-      }
+      // Use the OAuth service method for consistency
+      return await LinkedInOAuthService.testCurrentAccessToken();
     } catch (e) {
       print('Error testing access token: $e');
       return null;
@@ -100,6 +82,8 @@ class LinkedInTestService {
             'test_user_${DateTime.now().millisecondsSinceEpoch}',
         'firstName': userInfo['given_name'] ?? 'Test',
         'lastName': userInfo['family_name'] ?? 'User',
+        'name': userInfo['name'] ??
+            '${userInfo['given_name'] ?? 'Test'} ${userInfo['family_name'] ?? 'User'}',
         'email': userInfo['email'] ?? 'test@linkedin.com',
         'profilePicture': userInfo['picture'],
         'companies': [
@@ -138,6 +122,34 @@ class LinkedInTestService {
     print('Token starts with: ${testAccessToken.substring(0, 10)}');
     print('Token is valid format: ${testAccessToken.startsWith('AQ')}');
     print('UserInfo URL: $userinfoUrl');
+    print('Client ID: ${LinkedInOAuthService.clientId}');
+    print('Current Redirect URI: ${LinkedInOAuthService.redirectUri}');
     print('=============================================');
+  }
+
+  // Quick test to verify everything is working
+  static Future<bool> quickTest() async {
+    try {
+      print('=== LinkedIn Quick Test ===');
+
+      // Validate configuration
+      validateOAuthConfiguration();
+
+      // Test user info
+      final userInfo = await testUserInfo();
+      if (userInfo != null) {
+        print('✅ User info retrieved successfully');
+        print(
+            'User: ${userInfo['name'] ?? '${userInfo['given_name']} ${userInfo['family_name']}'}');
+        print('Email: ${userInfo['email']}');
+        return true;
+      } else {
+        print('❌ Failed to retrieve user info');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Quick test failed: $e');
+      return false;
+    }
   }
 }

@@ -19,12 +19,16 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   Future<void> _handleLinkedInSignIn() async {
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
     });
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final success = await authProvider.signInWithLinkedIn(context);
+
+    if (!mounted) return;
 
     setState(() {
       _isLoading = false;
@@ -36,12 +40,14 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         context.go('/profile-setup');
       }
-    } else if (authProvider.errorMessage != null) {
+    } else if (mounted && authProvider.errorMessage != null) {
       _showErrorSnackBar(authProvider.errorMessage!);
     }
   }
 
   void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
