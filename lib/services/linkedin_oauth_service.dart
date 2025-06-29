@@ -24,9 +24,9 @@ class LinkedInOAuthService {
       'https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))';
 
   // Redirect URIs - these MUST match what's configured in LinkedIn Developer Console
-  // Using HTTP localhost for testing (easier to configure)
+  // Using LinkedIn's default redirect for better compatibility
   static const String _mobileRedirectUri =
-      'http://localhost:8080/auth/linkedin/callback';
+      'https://www.linkedin.com/developers/tools/oauth/redirect';
   static const String _webRedirectUri =
       'http://localhost:3000/auth/linkedin/callback';
   static const String _alternativeWebRedirectUri =

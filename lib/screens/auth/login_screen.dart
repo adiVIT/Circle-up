@@ -18,6 +18,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
+  void _navigateToRoute(String route) {
+    if (!mounted) return;
+    context.go(route);
+  }
+
   Future<void> _handleLinkedInSignIn() async {
     if (!mounted) return;
 
@@ -35,10 +40,14 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (success && mounted) {
-      if (authProvider.currentUser?.bio != null) {
-        context.go('/home');
+      // Add a small delay to ensure auth state is properly updated
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (authProvider.currentUser?.bio != null &&
+          authProvider.currentUser!.bio!.isNotEmpty) {
+        _navigateToRoute('/home');
       } else {
-        context.go('/profile-setup');
+        _navigateToRoute('/profile-setup');
       }
     } else if (mounted && authProvider.errorMessage != null) {
       _showErrorSnackBar(authProvider.errorMessage!);

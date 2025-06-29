@@ -21,25 +21,26 @@ class AppRouter {
     redirect: (context, state) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final isLoggedIn = authProvider.isAuthenticated;
+      final currentPath = state.uri.toString();
 
       // If user is not logged in, redirect to login (except for splash)
-      if (!isLoggedIn &&
-          state.uri.toString() != '/splash' &&
-          state.uri.toString() != '/login') {
+      if (!isLoggedIn && currentPath != '/splash' && currentPath != '/login') {
         return '/login';
       }
 
       // If user is logged in but has minimal profile, redirect to profile setup
       if (isLoggedIn &&
-          authProvider.currentUser?.bio == null &&
-          state.uri.toString() != '/profile-setup') {
+          (authProvider.currentUser?.bio == null ||
+              authProvider.currentUser!.bio!.isEmpty) &&
+          currentPath != '/profile-setup') {
         return '/profile-setup';
       }
 
-      // If user is logged in and trying to access auth screens, redirect to home
+      // If user is logged in with complete profile and trying to access auth screens, redirect to home
       if (isLoggedIn &&
-          (state.uri.toString() == '/login' ||
-              state.uri.toString() == '/profile-setup')) {
+          authProvider.currentUser?.bio != null &&
+          authProvider.currentUser!.bio!.isNotEmpty &&
+          (currentPath == '/login' || currentPath == '/splash')) {
         return '/home';
       }
 
