@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
@@ -40,21 +41,24 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> signInWithLinkedIn() async {
+  Future<bool> signInWithLinkedIn(BuildContext context) async {
     _setLoading(true);
     _clearError();
 
     try {
-      final user = await _authService.signInWithLinkedIn();
+      final user = await _authService.signInWithLinkedIn(context);
       if (user != null) {
         _currentUser = user;
         _isAuthenticated = true;
         notifyListeners();
         return true;
+      } else {
+        _errorMessage = 'LinkedIn authentication failed. Please try again.';
+        notifyListeners();
+        return false;
       }
-      return false;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = 'LinkedIn authentication error: ${e.toString()}';
       notifyListeners();
       return false;
     } finally {

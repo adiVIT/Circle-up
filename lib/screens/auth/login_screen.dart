@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../config/app_theme.dart';
 import '../../providers/auth_provider.dart';
+import 'linkedin_debug_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.signInWithLinkedIn();
+    final success = await authProvider.signInWithLinkedIn(context);
 
     setState(() {
       _isLoading = false;
@@ -52,6 +54,26 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: kDebugMode
+          ? AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.bug_report),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LinkedInDebugScreen(),
+                      ),
+                    );
+                  },
+                  tooltip: 'LinkedIn OAuth Debug',
+                ),
+              ],
+            )
+          : null,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
